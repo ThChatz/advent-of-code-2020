@@ -96,13 +96,17 @@ solve1(ACC_OUT) :-
     findall(I, line(_, I), PROG),
     run_prog_until_loop(PROG, ACC_OUT, _).
 
-solve2(ACC, PC) :-
-    findall(I, line(_, I), PROG),
+solve2_(PROG, ACC, PC) :-
     replace(PROG, jmp(P), nop(P), NEWPROG),
     run_prog_until_loop(NEWPROG, ACC, PC).
 
+solve2_(PROG, ACC, PC) :-
+    replace(PROG, nop(P), jmp(P), NEWPROG),
+    order_by([desc(PC)], run_prog_until_loop(NEWPROG, ACC, PC)).
+    
 solve2(ACC, PC) :-
     findall(I, line(_, I), PROG),
-    replace(PROG, nop(P), jmp(P), NEWPROG),
-    run_prog_until_loop(NEWPROG, ACC, PC).
+    PC #>= 622,
+    solve2_(PROG, ACC, PC).
     
+solve2(ACC) :- solve2(ACC, _).
